@@ -27,7 +27,12 @@ source of rules. `CLAUDE.md` and other tool adapters point here.
 7. The agent opens a pull request that closes the issue. A human reviews and merges it.
 
 Status is tracked with label **keys** (not label titles); see
-[templates/github/other/github-labels.jsonc](./templates/github/other/github-labels.jsonc).
+[templates/github/other/github-labels.jsonc](./templates/github/other/github-labels.jsonc). Workflows set most status labels,
+see [docs/contributors/process.md](./docs/contributors/process.md#automation).
+
+After a human reports a merge, the agent cleans up: fast-forward the default branch, delete the local branch, prune remote
+references, confirm the remote branch is gone and check that the issue labels match its state (see
+[After a merge](./docs/contributors/process.md#after-a-merge)).
 
 ## Rules that must not be broken
 

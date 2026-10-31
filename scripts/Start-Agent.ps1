@@ -22,6 +22,9 @@
 .PARAMETER BotLogin
     Login of the App's bot, shown on the App's public page. Used as the git author.
 
+.PARAMETER ClaudePath
+    Path of a claude executable, for when claude is not on the PATH. Defaults to $env:KITE_AGENT_CLAUDE_PATH, then to claude on the PATH.
+
 .PARAMETER ClaudeArguments
     Extra arguments for claude.
 #>
@@ -31,6 +34,7 @@ param(
     [string]$Owner = 'msckite',
     [string]$Repository = 'az-platform-kite-agent',
     [string]$BotLogin = 'msckite-agent[bot]',
+    [string]$ClaudePath = $env:KITE_AGENT_CLAUDE_PATH,
     [string[]]$ClaudeArguments = @()
 )
 
@@ -48,10 +52,23 @@ if ($WhatIfPreference) {
     return
 }
 
-foreach ($tool in 'gh', 'git', 'claude') {
+foreach ($tool in 'gh', 'git') {
     if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) {
         throw "$tool was not found on the PATH."
     }
+}
+
+if ($ClaudePath) {
+    if (-not (Test-Path -LiteralPath $ClaudePath -PathType Leaf)) {
+        throw "ClaudePath '$ClaudePath' does not exist."
+    }
+    $claude = (Resolve-Path -LiteralPath $ClaudePath).Path
+} else {
+    $command = Get-Command claude -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $command) {
+        throw 'claude was not found on the PATH. Install the Claude Code CLI, or pass -ClaudePath (or set KITE_AGENT_CLAUDE_PATH) to a claude executable.'
+    }
+    $claude = $command.Source
 }
 
 $token = & (Join-Path -Path $PSScriptRoot -ChildPath 'Get-AgentToken.ps1') -ClientId $ClientId -Owner $Owner -Repository $Repository
@@ -89,7 +106,7 @@ try {
     $env:GIT_CONFIG_VALUE_1 = '!gh auth git-credential'
 
     Write-Information "Agent identity: $BotLogin. Token expires at $($token.ExpiresAt.ToString('HH:mm')) UTC; restart before then." -InformationAction Continue
-    & claude @ClaudeArguments
+    & $claude @ClaudeArguments
 } finally {
     foreach ($name in $names) {
         [Environment]::SetEnvironmentVariable($name, $previous[$name], 'Process')

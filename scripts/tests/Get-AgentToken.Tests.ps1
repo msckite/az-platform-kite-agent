@@ -64,4 +64,10 @@ Describe 'Start-Agent.ps1' {
         $output | Should -Match 'Get an installation token'
         $env:GH_TOKEN | Should -BeNullOrEmpty
     }
+
+    It 'stops with a clear message when ClaudePath does not exist' {
+        $script = [IO.Path]::Combine($PSScriptRoot, '..', 'Start-Agent.ps1')
+        { & $script -ClientId 'Iv1.test' -ClaudePath 'C:\does-not-exist\claude.exe' } | Should -Throw '*does not exist*'
+        $env:GH_TOKEN | Should -BeNullOrEmpty
+    }
 }

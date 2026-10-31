@@ -1,0 +1,68 @@
+name: Approval Guard
+
+# Safety net for gate 1: only a human may set the approved label, and only on an issue that
+# carries a proposed plan. It reacts after the label is set; the hard controls are the GitHub
+# App permissions and the rules in AGENTS.md.
+#
+# Disabled until the agent runs as the GitHub App, because before that the agent uses a human
+# login and cannot be told apart. Enable it with the repository variable APPROVAL_GUARD_ENABLED=true.
+
+on:
+  issues:
+    types:
+      - labeled
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  LABEL_FILE: ${{ vars.LABEL_FILE || 'templates/github/other/github-labels.jsonc' }}
+
+jobs:
+  guard:
+    if: vars.APPROVAL_GUARD_ENABLED == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the base ref
+        uses: actions/checkout@v4
+
+      - name: Resolve label keys
+        id: labels
+        shell: pwsh
+        run: ./.github/scripts/Get-LabelMap.ps1 -LabelFilePath $env:LABEL_FILE
+
+      - name: Revert an invalid approval
+        uses: actions/github-script@v7
+        env:
+          LABEL_MAP: ${{ steps.labels.outputs.map }}
+        with:
+          script: |
+            const map = JSON.parse(process.env.LABEL_MAP);
+            const { owner, repo } = context.repo;
+            const issue = context.payload.issue;
+
+            if (context.payload.label.name !== map['approved']) {
+              return;
+            }
+
+            const hasPlan = issue.labels.some(label => label.name === map['plan-proposed']);
+            const byBot = context.payload.sender.type === 'Bot';
+
+            if (!byBot && hasPlan) {
+              core.info(`#${issue.number}: approval by ${context.payload.sender.login} accepted`);
+              return;
+            }
+
+            const reason = byBot
+              ? 'only a human may approve a plan'
+              : 'the issue has no proposed plan to approve';
+
+            await github.rest.issues.removeLabel({ owner, repo, issue_number: issue.number, name: map['approved'] });
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issue.number,
+              body: `The approved label was removed: ${reason}. A human sets it on an issue labeled as plan proposed.`
+            });

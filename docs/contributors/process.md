@@ -11,6 +11,8 @@ This is the default way of working in this repository. It also serves as the sta
 - [Lifecycle](#lifecycle)
 - [The two human gates](#the-two-human-gates)
 - [Label keys](#label-keys)
+- [Automation](#automation)
+- [After a merge](#after-a-merge)
 - [The issue is the source of truth](#the-issue-is-the-source-of-truth)
 - [Branches, commits and pull requests](#branches-commits-and-pull-requests)
 - [Smoke tests](#smoke-tests)
@@ -71,6 +73,41 @@ The remaining keys (`bug`, `chore`, `documentation`, `enhancement`, `question` a
 > The `Set-GitHubLabels` command of the `MSCKite.Azure.Platform` module identifies labels by `name`. Renaming a label in your
 > label file therefore creates the new label and removes the old one, and issues lose the old association. Always run it with
 > `-WhatIf` first. Matching by `key` in the module is a planned follow-up in `az-platform-kite`.
+
+## Automation
+
+Two workflows keep the status labels current. Both resolve labels from the label file by key
+(`.github/scripts/Get-LabelMap.ps1`), so renamed labels keep working. Set the repository variable `LABEL_FILE` when your label file
+is not at `templates/github/other/github-labels.jsonc`.
+
+| Workflow | Trigger | Effect |
+| -------- | ------- | ------ |
+| [issue-status.yaml](../../.github/workflows/issue-status.yaml) | Pull request opened | Linked issues (`Closes #n`): remove `todo` and `plan-proposed`, set `in-progress` and `in-pr`. |
+| | Pull request merged | Remove `todo`, `in-progress` and `in-pr`, set `completed`. |
+| | Pull request closed without merge | Set `in-progress`, remove `in-pr` and comment. |
+| | Issue reopened | Remove `completed`, set `todo`. |
+| [approval-guard.yaml](../../.github/workflows/approval-guard.yaml) | `approved` label set | Removes it and comments when a bot set it, or when the issue has no `plan-proposed`. |
+
+The approval guard is a safety net that reacts after the label is set. It runs only when the repository variable
+`APPROVAL_GUARD_ENABLED` is `true`. Enable it once the agent works as the GitHub App, because before that the agent uses a human
+login and the guard cannot tell them apart.
+
+> [!NOTE]
+> Workflows that use the default `GITHUB_TOKEN` do not trigger other workflows. The label changes above therefore do not start
+> any further automation.
+
+## After a merge
+
+After a human merges, nothing in the pull request cleans up a local clone, and the remote branch is only deleted when the
+repository setting **Automatically delete head branches** is on (`delete_branch_on_merge`; turn it on for every repository).
+When a human tells the agent that a pull request is merged, the agent:
+
+1. Switches to the default branch and fast-forwards it (`git pull --ff-only`).
+2. Deletes the local branch of the pull request and prunes remote references (`git fetch --prune`).
+3. Confirms the remote branch is gone (`git ls-remote --heads origin <branch>` shows nothing).
+4. Checks the issue: it is closed and carries `completed`, without `in-progress` or `in-pr`. It corrects the labels if the
+   workflow did not, and says so.
+5. Proposes the next step from the queue of issues labeled `plan-proposed` or `approved`.
 
 ## The issue is the source of truth
 

@@ -1,0 +1,138 @@
+name: Sync Issue Status Labels
+
+# Moves the status label keys of linked issues along with their pull requests.
+# Labels are resolved from the label file by key, so renamed labels keep working.
+# pull_request_target runs with write permission: it checks out the base ref only
+# and must never run code from the pull request.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - closed
+
+  issues:
+    types:
+      - reopened
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+env:
+  LABEL_FILE: ${{ vars.LABEL_FILE || 'templates/github/other/github-labels.jsonc' }}
+
+jobs:
+  pull-request:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the base ref
+        uses: actions/checkout@v4
+
+      - name: Resolve label keys
+        id: labels
+        shell: pwsh
+        run: ./.github/scripts/Get-LabelMap.ps1 -LabelFilePath $env:LABEL_FILE
+
+      - name: Update linked issues
+        uses: actions/github-script@v7
+        env:
+          LABEL_MAP: ${{ steps.labels.outputs.map }}
+        with:
+          script: |
+            const map = JSON.parse(process.env.LABEL_MAP);
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+
+            const result = await github.graphql(
+              `query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    closingIssuesReferences(first: 100) {
+                      nodes { number repository { nameWithOwner } }
+                    }
+                  }
+                }
+              }`,
+              { owner, repo, number: pr.number }
+            );
+
+            const issueNumbers = [
+              ...new Set(
+                result.repository.pullRequest.closingIssuesReferences.nodes
+                  .filter(issue => issue.repository.nameWithOwner === `${owner}/${repo}`)
+                  .map(issue => issue.number)
+              )
+            ];
+
+            if (issueNumbers.length === 0) {
+              core.info('No linked issues found.');
+              return;
+            }
+
+            const remove = async (issue_number, key) => {
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name: map[key] });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+            };
+            const add = (issue_number, keys) =>
+              github.rest.issues.addLabels({ owner, repo, issue_number, labels: keys.map(key => map[key]) });
+
+            for (const issue_number of issueNumbers) {
+              if (context.payload.action === 'opened') {
+                core.info(`#${issue_number}: in progress and in pr`);
+                for (const key of ['todo', 'plan-proposed']) await remove(issue_number, key);
+                await add(issue_number, ['in-progress', 'in-pr']);
+              } else if (pr.merged) {
+                core.info(`#${issue_number}: completed`);
+                for (const key of ['todo', 'in-progress', 'in-pr']) await remove(issue_number, key);
+                await add(issue_number, ['completed']);
+              } else {
+                core.info(`#${issue_number}: pull request closed without merge`);
+                await remove(issue_number, 'in-pr');
+                await add(issue_number, ['in-progress']);
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body: `Pull request #${pr.number} was closed without merging. The issue stays open and is back to in progress.`
+                });
+              }
+            }
+
+  issue-reopened:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the base ref
+        uses: actions/checkout@v4
+
+      - name: Resolve label keys
+        id: labels
+        shell: pwsh
+        run: ./.github/scripts/Get-LabelMap.ps1 -LabelFilePath $env:LABEL_FILE
+
+      - name: Move a reopened issue back to todo
+        uses: actions/github-script@v7
+        env:
+          LABEL_MAP: ${{ steps.labels.outputs.map }}
+        with:
+          script: |
+            const map = JSON.parse(process.env.LABEL_MAP);
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.issue.number;
+
+            try {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number, name: map['completed'] });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [map['todo']] });
+            core.info(`#${issue_number} reopened: completed -> todo`);

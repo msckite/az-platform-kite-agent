@@ -26,8 +26,10 @@ See [AGENTS.md](./AGENTS.md) for the rules agents follow here.
 | Area | State |
 | ---- | ----- |
 | Repository foundation | In progress |
-| Label set with keys | Draft |
-| Issue form, rulesets and bot setup guides | Planned |
+| Label set with keys | Done |
+| Rulesets | Done, see [rulesets](./docs/contributors/rulesets.md) |
+| Process, GitHub App and agent identity guides | In review, see [process](./docs/contributors/process.md), [GitHub App setup](./docs/contributors/github-app-setup.md) and [agent identity](./docs/contributors/agent-identity.md) |
+| Issue form and workflows | Planned |
 | Kite Agent plugin | Planned |
 
 ## License

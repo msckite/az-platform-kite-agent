@@ -6,8 +6,9 @@ The agent must not work with your identity and all your privileges. It gets its 
 only has the permissions you grant.
 
 > [!NOTE]
-> Unverified: this guide was written before the App existed. Steps marked _(unverified)_ must be confirmed when someone follows
-> them for the first time, and corrected here.
+> This guide was written before the App existed and has since been followed with the real App; the notes in
+> [Let Claude Code use the App](#let-claude-code-use-the-app) and the [smoke test](#smoke-test) list what was verified and what
+> is still open.
 
 <!-- omit from toc -->
 ## Table of Contents
@@ -60,8 +61,9 @@ Leave **Organization permissions**, **Account permissions** and **Enterprise per
 Only the four repository permissions above are needed.
 
 Do **not** grant Administration, Workflows, Actions or Environments. Without Administration the App cannot change rulesets, and
-without a bypass entry it cannot push to protected branches. It also cannot approve or merge its own pull request, because a
-human approval is required.
+without a bypass entry it cannot push to protected branches. The App's Pull requests and Contents permissions would allow a
+merge in principle, so what stops it is the [ruleset](./rulesets.md): a merge needs one human approval, and the App is not on
+the bypass list. Never add the App to a bypass list.
 
 > [!IMPORTANT]
 > Setting the `approved` label is a human gate, but GitHub cannot restrict a single label to humans through permissions alone.
@@ -140,8 +142,8 @@ the App (for example while the vault is not set up) fails instead of using your 
 > [!NOTE]
 > Verified with the real key on 2026-10-31: the token exchange, a token limited to this repository, the bot as git author and
 > committer, the push to an `agent/**` branch through the credential helper, and the ruleset rejecting a push to `main`. The JWT
-> and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Still unverified: that the App cannot merge a
-> pull request.
+> and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Still unverified: that the ruleset stops the App from merging a
+> pull request; test it on a throwaway pull request, never on one you want to keep.
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 
@@ -184,7 +186,7 @@ git push origin "$(git commit-tree 'HEAD^{tree}' -p HEAD -m 'test: App identity'
 gh api repos/msckite/az-platform-kite-agent/commits/agent/app-test --jq '.author.login, .committer.login'
                                               # expect: msckite-agent[bot] twice
 git push origin HEAD:main                     # expect: rejected, GH013 repository rule violations
-gh pr merge <pull-request-number> --squash    # expect: rejected, the App cannot merge
+gh pr merge <throwaway-pr-number> --squash    # expect: rejected, approval required; use a throwaway pull request
 git push origin --delete agent/app-test       # clean up
 ```
 

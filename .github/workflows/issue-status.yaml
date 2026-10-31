@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Check out the base ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Resolve label keys
         id: labels
@@ -111,7 +111,7 @@ jobs:
 
     steps:
       - name: Check out the base ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Resolve label keys
         id: labels

@@ -122,8 +122,9 @@ Then start the agent from the repository, instead of starting `claude` directly:
 ./scripts/Start-Agent.ps1 -WhatIf    # shows the steps, creates no token
 ```
 
-The script needs the Claude Code CLI as `claude` on your PATH. When it is installed elsewhere, point to it with `-ClaudePath` or
-set `KITE_AGENT_CLAUDE_PATH` once. The script stops, and does not fall back to anything else, when it cannot find an executable.
+The script needs the Claude Code CLI. It uses, in this order: `-ClaudePath`, `KITE_AGENT_CLAUDE_PATH`, the default install
+location `~/.local/bin/claude.exe`, then `claude` on your PATH. The script stops, and does not fall back to anything else, when it
+cannot find an executable.
 
 > [!NOTE]
 > The script starts a CLI session in your terminal and gives that process the token. A session in the Claude desktop app runs in

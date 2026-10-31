@@ -23,7 +23,7 @@
     Login of the App's bot, shown on the App's public page. Used as the git author.
 
 .PARAMETER ClaudePath
-    Path of a claude executable, for when claude is not on the PATH. Defaults to $env:KITE_AGENT_CLAUDE_PATH, then to claude on the PATH.
+    Path of a claude executable, for when claude is not on the PATH. Defaults to $env:KITE_AGENT_CLAUDE_PATH, then to ~/.local/bin/claude.exe (the default install location), then to claude on the PATH.
 
 .PARAMETER ClaudeArguments
     Extra arguments for claude.
@@ -64,11 +64,16 @@ if ($ClaudePath) {
     }
     $claude = (Resolve-Path -LiteralPath $ClaudePath).Path
 } else {
+    # Default install location of the Claude Code CLI on Windows; a claude on the PATH is used otherwise.
+    $defaultPath = [IO.Path]::Combine($HOME, '.local', 'bin', 'claude.exe')
     $command = Get-Command claude -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $command) {
-        throw 'claude was not found on the PATH. Install the Claude Code CLI, or pass -ClaudePath (or set KITE_AGENT_CLAUDE_PATH) to a claude executable.'
+    if (Test-Path -LiteralPath $defaultPath -PathType Leaf) {
+        $claude = $defaultPath
+    } elseif ($command) {
+        $claude = $command.Source
+    } else {
+        throw "claude was not found at '$defaultPath' or on the PATH. Install the Claude Code CLI, or pass -ClaudePath (or set KITE_AGENT_CLAUDE_PATH) to a claude executable."
     }
-    $claude = $command.Source
 }
 
 $token = & (Join-Path -Path $PSScriptRoot -ChildPath 'Get-AgentToken.ps1') -ClientId $ClientId -Owner $Owner -Repository $Repository

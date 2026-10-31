@@ -69,7 +69,9 @@ human approval is required.
 
 ## Keep the private key safe
 
-1. In the App settings > **Credentials** > **Private keys** > **Generate a private key**. GitHub downloads a `.pem` file once.
+1. In the App settings > **Credentials** > **Key pairs** tab, generate a key pair. GitHub downloads a `.pem` file once. The key
+   cannot be created on the creation form, only after the App exists.
+   Ignore the **Client secrets** tab: client secrets are for user sign-in (OAuth), which the agent does not use.
 2. Store it **outside every repository**, for example in a folder only your user can read, or in a secret store such as the
    Windows Credential Manager through the PowerShell SecretManagement module. Do not put it in a project folder,
    and do not paste it into a chat or an issue.
@@ -101,7 +103,8 @@ token** that expires after one hour. The `gh` CLI uses the token through `GH_TOK
 
 _(unverified)_ The planned approach is a small PowerShell script in this repository that:
 
-1. Reads the App id, the installation id and the key location from environment variables or the secret store.
+1. Reads the **Client ID** (or App ID, both shown on **General**), the installation id and the key location from environment
+   variables or the secret store. The IDs are identifiers, not secrets; only the `.pem` file is secret.
 2. Creates the JWT and requests an installation token from `POST /app/installations/{id}/access_tokens`.
 3. Sets `GH_TOKEN` in the current process only, not permanently, then starts `claude`.
 

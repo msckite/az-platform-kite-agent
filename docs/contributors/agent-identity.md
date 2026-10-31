@@ -18,7 +18,7 @@ carries a human's privileges.
 | Item | Value |
 | ---- | ----- |
 | Account type | GitHub App owned by the `msckite` organization, see [github-app-setup.md](./github-app-setup.md) |
-| Name | `msckite-kite-agent` (shown as `msckite-kite-agent[bot]`) |
+| Name | `MSCKite™ Agent` (shown as `<slug>[bot]`; the slug is on the App's public page) |
 | Avatar | Different from every human's avatar |
 | Role in repositories | Installed on selected repositories only, with the permissions in the setup guide |
 | Branches | Can only write to `agent/**`, enforced by [rulesets](./rulesets.md) |

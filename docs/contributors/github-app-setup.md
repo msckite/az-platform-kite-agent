@@ -14,9 +14,9 @@ only has the permissions you grant.
 
 - [Create the App](#create-the-app)
 - [Permissions](#permissions)
-- [Install the App](#install-the-app)
 - [Keep the private key safe](#keep-the-private-key-safe)
 - [Restrict who manages the App](#restrict-who-manages-the-app)
+- [Install the App](#install-the-app)
 - [Let Claude Code use the App](#let-claude-code-use-the-app)
 - [Remove personal credentials from the agent](#remove-personal-credentials-from-the-agent)
 - [Smoke test](#smoke-test)
@@ -24,7 +24,8 @@ only has the permissions you grant.
 ## Create the App
 
 1. Open **Organization settings** > **Developer settings** > **GitHub Apps** > **New GitHub App** for `msckite`.
-2. Name it, for example `msckite-kite-agent`. The name becomes the bot's login, `msckite-kite-agent[bot]`.
+2. Name it, for example `MSCKite™ Agent`. GitHub derives the bot's login from the name as a URL-safe slug followed by `[bot]`.
+   The slug is shown on the App's **Public page**; use that login in rulesets and documentation.
 3. Homepage URL: the repository URL.
 4. Disable **Webhook** (Active). The agent pulls, GitHub does not push events to it.
 5. Under **Where can this GitHub App be installed?** choose **Only on this account**.
@@ -66,13 +67,6 @@ human approval is required.
 > Setting the `approved` label is a human gate, but GitHub cannot restrict a single label to humans through permissions alone.
 > The agent rule in [AGENTS.md](../../AGENTS.md) forbids it and a workflow reverts it (planned). Treat both as controls.
 
-## Install the App
-
-1. Open the App settings > **Install App**, and select **Install** next to `msckite`.
-2. Choose **Only select repositories** and select `az-platform-kite-agent`. Add other repositories one by one.
-
-Never choose **All repositories**.
-
 ## Keep the private key safe
 
 1. In the App settings > **Credentials** > **Private keys** > **Generate a private key**. GitHub downloads a `.pem` file once.
@@ -87,6 +81,18 @@ Never choose **All repositories**.
 
 Under **App managers**, keep the list as short as possible. A manager can change the App's permissions and generate keys, so
 only trusted humans belong there. The agent is never an App manager.
+
+## Install the App
+
+Do this last, after the permissions are set and the private key is generated, because the installation redirects you away from
+the App settings.
+
+1. Open the App settings > **Install App**, and select **Install** next to `msckite`.
+2. Choose **Only select repositories** and select `az-platform-kite-agent`. Add other repositories one by one.
+3. After you select **Install**, GitHub redirects you to the installation page, not back to the App settings. To return to the
+   App settings, open **Organization settings** > **Developer settings** > **GitHub Apps** and select **Edit** next to the App.
+
+Never choose **All repositories**.
 
 ## Let Claude Code use the App
 

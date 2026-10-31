@@ -1,0 +1,35 @@
+<!-- omit from toc -->
+# Azure Platform Kite Agent
+
+By **MSCKite™**  
+_Lighter Work. Higher Impact._
+
+> [!IMPORTANT]
+> This repository is under construction and intended primarily for personal use.
+
+## What's this repo about?
+
+Two things in one repository:
+
+1. **The Kite Agent**: a Claude Code plugin that knows the
+   [`MSCKite.Azure.Platform`](https://www.powershellgallery.com/packages/MSCKite.Azure.Platform) PowerShell module, its goals,
+   principles and governance, so people can start their own platform projects smoothly. _(planned)_
+2. **A human-in-the-loop way of working** with coding agents (Claude Code first, GitHub Copilot later), built on
+   GitHub issues, labels, branches and pull requests. _(planned)_
+
+> **AI supports, humans decide.** Agents research, propose and execute; humans approve every plan and every merge.
+
+See [AGENTS.md](./AGENTS.md) for the rules agents follow here.
+
+## Status
+
+| Area | State |
+| ---- | ----- |
+| Repository foundation | In progress |
+| Label set with keys | Draft |
+| Issue form, rulesets and bot setup guides | Planned |
+| Kite Agent plugin | Planned |
+
+## License
+
+See [LICENSE.md](./LICENSE.md).

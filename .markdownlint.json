@@ -1,0 +1,27 @@
+{
+  "MD004": false,
+  "MD007": {
+    "indent": 2
+  },
+  "MD009": {
+    "br_spaces": 2,
+    "strict": false
+  },
+  "MD013": {
+    "line_length": 999
+  },
+  "MD025": {
+    "front_matter_title": ""
+  },
+  "MD026": {
+    "punctuation": ".,;:!。，；:"
+  },
+  "MD028": false,
+  "MD029": false,
+  "MD033": false,
+  "MD034": true,
+  "MD036": false,
+  "MD040": false,
+  "MD053": false,
+  "blank_lines": false
+}

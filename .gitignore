@@ -1,0 +1,15 @@
+# Secrets and local environment
+*.env
+.env*
+*.pem
+*.key
+
+# Local agent state (personal, never shared)
+.claude/settings.local.json
+.claude/worktrees/
+
+# Editor and OS
+.vscode/*.log
+Thumbs.db
+.DS_Store
+node_modules/

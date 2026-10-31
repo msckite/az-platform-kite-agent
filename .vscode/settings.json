@@ -1,0 +1,53 @@
+{
+  "[json]": {
+    "files.encoding": "utf8",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  },
+  "[jsonc]": {
+    "files.encoding": "utf8",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  },
+  "[markdown]": {
+    "files.encoding": "utf8",
+    "files.trimTrailingWhitespace": false
+  },
+  "[powershell]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "files.encoding": "utf8",
+    "editor.formatOnSave": true
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.insertSpaces": true,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "markdown.extension.toc.levels": "1..2",
+  "markdown.extension.tableFormatter.enabled": false,
+  "powershell.codeFormatting.autoCorrectAliases": true,
+  "powershell.codeFormatting.newLineAfterCloseBrace": false,
+  "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+  "powershell.codeFormatting.preset": "OTBS",
+  "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+  "powershell.codeFormatting.useConstantStrings": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  // Use a custom PowerShell Script Analyzer settings file for this workspace.
+  // Relative paths for this setting are always relative to the workspace root dir.
+  "powershell.scriptAnalysis.settingsPath": "./scripts/PSScriptAnalyzerSettings.psd1",
+  "js/ts.preferences.quoteStyle": "single",
+  "yaml.format.singleQuote": true,
+  "cSpell.words": [
+    "msckite",
+    "MSCKite"
+  ]
+}

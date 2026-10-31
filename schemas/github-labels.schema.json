@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/msckite/az-platform-kite-agent/refs/heads/main/schemas/github-labels.schema.json",
+  "schemaVersion": "1.0.0",
+  "title": "GitHub label definitions for the Kite Agent process",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "templateVersion": {
+      "description": "Version of the template contract.",
+      "const": "1.0.0"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/label"
+      }
+    }
+  },
+  "required": [
+    "templateVersion",
+    "labels"
+  ],
+  "definitions": {
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Stable kebab-case identifier that agents and workflows use instead of the label name"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Label title shown in GitHub; may be renamed freely"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#?[0-9A-Fa-f]{6}$",
+          "description": "6-digit hex color, with or without a leading '#'"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional label description"
+        }
+      },
+      "required": [
+        "key",
+        "name",
+        "color"
+      ]
+    }
+  }
+}

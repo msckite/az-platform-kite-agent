@@ -33,7 +33,7 @@ only has the permissions you grant.
 
    | Page | Used for |
    | ---- | -------- |
-   | **General** | Display information and the logo (step 8) |
+   | **General** | Display information, the logo (step 8) and the **Webhook** setting (step 4, check it is off) |
    | **Permissions & events** | [Permissions](#permissions) |
    | **Credentials** | [Private key](#keep-the-private-key-safe) |
    | **Install App** | [Installation](#install-the-app) |

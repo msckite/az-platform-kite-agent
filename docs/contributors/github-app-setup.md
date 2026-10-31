@@ -138,9 +138,10 @@ The token expires after one hour. Restart the script when it runs out; the scrip
 the App (for example while the vault is not set up) fails instead of using your login.
 
 > [!NOTE]
-> Verified offline only: the JWT signature (RS256, at most 10 minutes), the `-WhatIf` run and the scripts' static analysis, with
-> `Invoke-Pester ./scripts/tests`. Unverified until someone runs it with the real key: the token exchange, the bot's git author
-> and the push through the credential helper. Correct this section after the first run.
+> Verified with the real key on 2026-10-31: the token exchange, a token limited to this repository, the bot as git author and
+> committer, the push to an `agent/**` branch through the credential helper, and the ruleset rejecting a push to `main`. The JWT
+> and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Still unverified: that the App cannot merge a
+> pull request.
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 
@@ -155,13 +156,37 @@ The agent must not reuse your identity through another route:
 
 ## Smoke test
 
-With the installation token as `GH_TOKEN`:
+Run these in a session that [Start-Agent.ps1](../../scripts/Start-Agent.ps1) started, so `GH_TOKEN` is the installation token
+and the git identity is the bot's. The commands work in PowerShell and in Bash. In Claude Code, type `!` once at the start of
+the prompt and paste the lines after it; `!` runs the whole input in Bash, so a `!` on later lines is part of the command.
 
-```powershell
-gh api user                                   # expect: error, an installation token is not a user
-gh api repos/msckite/az-platform-kite-agent --jq .full_name    # expect: msckite/az-platform-kite-agent
-git push origin HEAD:agent/app-test           # expect: accepted
-git push origin HEAD:main                     # expect: rejected, pull request required
+### Who am I
+
+An installation token has no authenticated user, so `gh api user` answers `403 Resource not accessible by integration`. That
+error is the expected result, not a fault. Prove the identity with endpoints an installation token can use:
+
+```shell
+gh api user                                   # expect: 403 Resource not accessible by integration
+gh api installation/repositories --jq '.repositories[].full_name'    # expect: only msckite/az-platform-kite-agent
+gh api 'users/msckite-agent%5Bbot%5D' --jq '{login, type}'           # expect: msckite-agent[bot], Bot
+git var GIT_AUTHOR_IDENT                      # expect: msckite-agent[bot] <...+msckite-agent[bot]@users.noreply.github.com>
+```
+
+`installation/repositories` only works with an installation token. A personal token fails there, and one that lists more than
+this repository was not limited by [Get-AgentToken.ps1](../../scripts/Get-AgentToken.ps1).
+
+### Push and authorship
+
+Push a commit that the bot authors, without changing your local branch, and check how GitHub attributes it:
+
+```shell
+git push origin "$(git commit-tree 'HEAD^{tree}' -p HEAD -m 'test: App identity'):refs/heads/agent/app-test"    # expect: accepted
+gh api repos/msckite/az-platform-kite-agent/commits/agent/app-test --jq '.author.login, .committer.login'
+                                              # expect: msckite-agent[bot] twice
+git push origin HEAD:main                     # expect: rejected, GH013 repository rule violations
 gh pr merge <pull-request-number> --squash    # expect: rejected, the App cannot merge
 git push origin --delete agent/app-test       # clean up
 ```
+
+If `.author.login` is empty, GitHub could not link the e-mail address to the bot: check that `Start-Agent.ps1` found the bot id
+(the address must start with `<id>+`).

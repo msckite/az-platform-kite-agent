@@ -28,8 +28,8 @@ only has the permissions you grant.
 4. Disable **Webhook** (Active). The agent pulls, GitHub does not push events to it.
 5. Under **Where can this GitHub App be installed?** choose **Only on this account**.
 6. Select **Create GitHub App**. The creation form has no logo field.
-7. On the App's settings page, under **General** > **Display information**, upload a logo that is clearly different from your
-   own avatar, so you can see who wrote what. The logo appears as the bot's avatar.
+7. Once the App exists, its settings page shows **Display information** with an **Upload a logo...** button. Upload a logo that
+   is clearly different from your own avatar, so you can see who wrote what. The logo appears as the bot's avatar.
 
 ## Permissions
 

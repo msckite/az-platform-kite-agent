@@ -30,6 +30,7 @@ See [AGENTS.md](./AGENTS.md) for the rules agents follow here.
 | Rulesets | Done, see [rulesets](./docs/contributors/rulesets.md) |
 | Process, GitHub App and agent identity guides | In review, see [process](./docs/contributors/process.md), [GitHub App setup](./docs/contributors/github-app-setup.md) and [agent identity](./docs/contributors/agent-identity.md) |
 | Label status workflows and approval guard | In review, see [process](./docs/contributors/process.md#automation) |
+| Agent token script (run as the GitHub App) | In review, see [GitHub App setup](./docs/contributors/github-app-setup.md#let-claude-code-use-the-app) |
 | Issue form and label sync script | Planned |
 | Kite Agent plugin | Planned |
 

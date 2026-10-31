@@ -100,15 +100,35 @@ Never choose **All repositories**.
 A GitHub App authenticates in two steps: sign a short-lived JWT with the private key, then exchange it for an **installation
 token** that expires after one hour. The `gh` CLI uses the token through `GH_TOKEN`.
 
-_(unverified)_ The planned approach is a small PowerShell script in this repository that:
+Two scripts in [scripts](../../scripts) do this for you:
 
-1. Reads the **Client ID** (or App ID, both shown on **General**), the installation id and the key location from environment
-   variables or the secret store. The IDs are identifiers, not secrets; only the `.pem` file is secret.
-2. Creates the JWT and requests an installation token from `POST /app/installations/{id}/access_tokens`.
-3. Sets `GH_TOKEN` in the current process only, not permanently, then starts `claude`.
+- [Get-AgentToken.ps1](../../scripts/Get-AgentToken.ps1) reads the private key from the vault (see
+  [secret-management.md](./secret-management.md)), signs the JWT, looks up the installation of the repository and requests an
+  installation token that is limited to that one repository. The key and the token stay in memory.
+- [Start-Agent.ps1](../../scripts/Start-Agent.ps1) sets `GH_TOKEN` for the process only, makes git push with the token, sets the
+  bot as the git author, checks that `gh api user` fails (an installation token is not a user), starts `claude`, and restores
+  your environment when `claude` exits. It never falls back to your own login: without a token it stops.
 
-Until that script exists, the agent runs with your own `gh` login, and you review every push, issue and pull request. That is
-the reason the rulesets protect `main` first.
+Set the **Client ID** (shown on **General**; an identifier, not a secret) once in your own terminal profile:
+
+```powershell
+[Environment]::SetEnvironmentVariable('KITE_AGENT_CLIENT_ID', '<client-id>', 'User')
+```
+
+Then start the agent from the repository, instead of starting `claude` directly:
+
+```powershell
+./scripts/Start-Agent.ps1            # starts claude as the bot
+./scripts/Start-Agent.ps1 -WhatIf    # shows the steps, creates no token
+```
+
+The token expires after one hour. Restart the script when it runs out; the script prints the expiry time. A script run without
+the App (for example while the vault is not set up) fails instead of using your login.
+
+> [!NOTE]
+> Verified offline only: the JWT signature (RS256, at most 10 minutes), the `-WhatIf` run and the scripts' static analysis, with
+> `Invoke-Pester ./scripts/tests`. Unverified until someone runs it with the real key: the token exchange, the bot's git author
+> and the push through the credential helper. Correct this section after the first run.
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 

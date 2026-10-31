@@ -6,8 +6,9 @@ The agent must not work with your identity and all your privileges. It gets its 
 only has the permissions you grant.
 
 > [!NOTE]
-> Unverified: this guide was written before the App existed. Steps marked _(unverified)_ must be confirmed when someone follows
-> them for the first time, and corrected here.
+> This guide was written before the App existed and has since been followed with the real App; the notes in
+> [Let Claude Code use the App](#let-claude-code-use-the-app) and the [smoke test](#smoke-test) list what was verified and what
+> is still open.
 
 <!-- omit from toc -->
 ## Table of Contents
@@ -60,8 +61,9 @@ Leave **Organization permissions**, **Account permissions** and **Enterprise per
 Only the four repository permissions above are needed.
 
 Do **not** grant Administration, Workflows, Actions or Environments. Without Administration the App cannot change rulesets, and
-without a bypass entry it cannot push to protected branches. It also cannot approve or merge its own pull request, because a
-human approval is required.
+without a bypass entry it cannot push to protected branches. The App's Pull requests and Contents permissions would allow a
+merge in principle, so what stops it is the [ruleset](./rulesets.md): a merge needs one human approval, and the App is not on
+the bypass list. Never add the App to a bypass list.
 
 > [!IMPORTANT]
 > Setting the `approved` label is a human gate, but GitHub cannot restrict a single label to humans through permissions alone.
@@ -100,15 +102,48 @@ Never choose **All repositories**.
 A GitHub App authenticates in two steps: sign a short-lived JWT with the private key, then exchange it for an **installation
 token** that expires after one hour. The `gh` CLI uses the token through `GH_TOKEN`.
 
-_(unverified)_ The planned approach is a small PowerShell script in this repository that:
+Two scripts in [scripts](../../scripts) do this for you:
 
-1. Reads the **Client ID** (or App ID, both shown on **General**), the installation id and the key location from environment
-   variables or the secret store. The IDs are identifiers, not secrets; only the `.pem` file is secret.
-2. Creates the JWT and requests an installation token from `POST /app/installations/{id}/access_tokens`.
-3. Sets `GH_TOKEN` in the current process only, not permanently, then starts `claude`.
+- [Get-AgentToken.ps1](../../scripts/Get-AgentToken.ps1) reads the private key from the vault (see
+  [secret-management.md](./secret-management.md)), signs the JWT, looks up the installation of the repository and requests an
+  installation token that is limited to that one repository. The key and the token stay in memory.
+- [Start-Agent.ps1](../../scripts/Start-Agent.ps1) sets `GH_TOKEN` for the process only, makes git push with the token, sets the
+  bot as the git author, checks that `gh api user` fails (an installation token is not a user), starts `claude`, and restores
+  your environment when `claude` exits. It never falls back to your own login: without a token it stops.
 
-Until that script exists, the agent runs with your own `gh` login, and you review every push, issue and pull request. That is
-the reason the rulesets protect `main` first.
+Set the **Client ID** (shown on **General**; an identifier, not a secret) once in your own terminal profile:
+
+```powershell
+[Environment]::SetEnvironmentVariable('KITE_AGENT_CLIENT_ID', '<client-id>', 'User')
+```
+
+A terminal that was already open does not see the new value, but the scripts also read the saved user-level value, so the
+restart is not needed. Without a Client ID they stop.
+
+Then start the agent from the repository, instead of starting `claude` directly:
+
+```powershell
+./scripts/Start-Agent.ps1            # starts claude as the bot
+./scripts/Start-Agent.ps1 -WhatIf    # shows the steps, creates no token
+```
+
+The script needs the Claude Code CLI. It uses, in this order: `-ClaudePath`, `KITE_AGENT_CLAUDE_PATH`, the default install
+location `~/.local/bin/claude.exe`, then `claude` on your PATH. The script stops, and does not fall back to anything else, when it
+cannot find an executable.
+
+> [!NOTE]
+> The script starts a CLI session in your terminal and gives that process the token. A session in the Claude desktop app runs in
+> the app's own process, so the script cannot change its identity. Whether the desktop app can act as the bot, for example by
+> starting the app from a process that holds the token, is untested.
+
+The token expires after one hour. Restart the script when it runs out; the script prints the expiry time. A script run without
+the App (for example while the vault is not set up) fails instead of using your login.
+
+> [!NOTE]
+> Verified with the real key on 2026-10-31: the token exchange, a token limited to this repository, the bot as git author and
+> committer, the push to an `agent/**` branch through the credential helper, and the ruleset rejecting a push to `main`. The JWT
+> and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Still unverified: that the ruleset stops the App from merging a
+> pull request; test it on a throwaway pull request, never on one you want to keep.
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 
@@ -123,13 +158,37 @@ The agent must not reuse your identity through another route:
 
 ## Smoke test
 
-With the installation token as `GH_TOKEN`:
+Run these in a session that [Start-Agent.ps1](../../scripts/Start-Agent.ps1) started, so `GH_TOKEN` is the installation token
+and the git identity is the bot's. The commands work in PowerShell and in Bash. In Claude Code, type `!` once at the start of
+the prompt and paste the lines after it; `!` runs the whole input in Bash, so a `!` on later lines is part of the command.
 
-```powershell
-gh api user                                   # expect: error, an installation token is not a user
-gh api repos/msckite/az-platform-kite-agent --jq .full_name    # expect: msckite/az-platform-kite-agent
-git push origin HEAD:agent/app-test           # expect: accepted
-git push origin HEAD:main                     # expect: rejected, pull request required
-gh pr merge <pull-request-number> --squash    # expect: rejected, the App cannot merge
+### Who am I
+
+An installation token has no authenticated user, so `gh api user` answers `403 Resource not accessible by integration`. That
+error is the expected result, not a fault. Prove the identity with endpoints an installation token can use:
+
+```shell
+gh api user                                   # expect: 403 Resource not accessible by integration
+gh api installation/repositories --jq '.repositories[].full_name'    # expect: only msckite/az-platform-kite-agent
+gh api 'users/msckite-agent%5Bbot%5D' --jq '{login, type}'           # expect: msckite-agent[bot], Bot
+git var GIT_AUTHOR_IDENT                      # expect: msckite-agent[bot] <...+msckite-agent[bot]@users.noreply.github.com>
+```
+
+`installation/repositories` only works with an installation token. A personal token fails there, and one that lists more than
+this repository was not limited by [Get-AgentToken.ps1](../../scripts/Get-AgentToken.ps1).
+
+### Push and authorship
+
+Push a commit that the bot authors, without changing your local branch, and check how GitHub attributes it:
+
+```shell
+git push origin "$(git commit-tree 'HEAD^{tree}' -p HEAD -m 'test: App identity'):refs/heads/agent/app-test"    # expect: accepted
+gh api repos/msckite/az-platform-kite-agent/commits/agent/app-test --jq '.author.login, .committer.login'
+                                              # expect: msckite-agent[bot] twice
+git push origin HEAD:main                     # expect: rejected, GH013 repository rule violations
+gh pr merge <throwaway-pr-number> --squash    # expect: rejected, approval required; use a throwaway pull request
 git push origin --delete agent/app-test       # clean up
 ```
+
+If `.author.login` is empty, GitHub could not link the e-mail address to the bot: check that `Start-Agent.ps1` found the bot id
+(the address must start with `<id>+`).

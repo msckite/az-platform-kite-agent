@@ -10,6 +10,7 @@ carries a human's privileges.
 - [Identity](#identity)
 - [What the agent may do](#what-the-agent-may-do)
 - [What the agent may not do](#what-the-agent-may-not-do)
+- [Running as the bot](#running-as-the-bot)
 - [Commits and pull requests](#commits-and-pull-requests)
 - [Several agents](#several-agents)
 
@@ -42,6 +43,18 @@ carries a human's privileges.
 - Act with a human's credentials or tokens.
 
 Anything that is hard to reverse, or visible to others, requires an explicit yes in the chat first.
+
+## Running as the bot
+
+Start the agent with [Start-Agent.ps1](../../scripts/Start-Agent.ps1), not with `claude` directly. It gives the agent a
+short-lived installation token (one repository, one hour) and sets the bot as the git author, so the agent never uses a human
+login. See [github-app-setup.md](./github-app-setup.md#let-claude-code-use-the-app).
+
+Once the agent runs as the bot, enable the approval guard by setting the repository variable `APPROVAL_GUARD_ENABLED` to `true`:
+
+```powershell
+gh variable set APPROVAL_GUARD_ENABLED --body true --repo msckite/az-platform-kite-agent
+```
 
 ## Commits and pull requests
 

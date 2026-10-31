@@ -40,6 +40,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# A variable saved with SetEnvironmentVariable(..., 'User') is not visible to terminals that were already open.
+if ([string]::IsNullOrWhiteSpace($ClientId)) {
+    $ClientId = [Environment]::GetEnvironmentVariable('KITE_AGENT_CLIENT_ID', 'User')
+}
+
 $steps = @(
     'Get an installation token limited to {0}/{1} from the secret vault key' -f $Owner, $Repository
     'Set GH_TOKEN and the git identity for this process only'

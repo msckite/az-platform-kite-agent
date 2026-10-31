@@ -118,5 +118,10 @@ function Get-AgentToken {
 
 # Dot-sourcing only defines the functions.
 if ($MyInvocation.InvocationName -ne '.') {
+    # A variable saved with SetEnvironmentVariable(..., 'User') is not visible to terminals that were already open.
+    if ([string]::IsNullOrWhiteSpace($ClientId)) {
+        $ClientId = [Environment]::GetEnvironmentVariable('KITE_AGENT_CLIENT_ID', 'User')
+    }
+
     Get-AgentToken -ClientId $ClientId -Owner $Owner -Repository $Repository -VaultName $VaultName -SecretName $SecretName
 }

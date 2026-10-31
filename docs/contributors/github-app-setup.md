@@ -115,6 +115,9 @@ Set the **Client ID** (shown on **General**; an identifier, not a secret) once i
 [Environment]::SetEnvironmentVariable('KITE_AGENT_CLIENT_ID', '<client-id>', 'User')
 ```
 
+A terminal that was already open does not see the new value, but the scripts also read the saved user-level value, so the
+restart is not needed. Without a Client ID they stop.
+
 Then start the agent from the repository, instead of starting `claude` directly:
 
 ```powershell

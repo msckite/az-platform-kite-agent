@@ -73,6 +73,17 @@ function Get-AppJwt {
     '{0}.{1}' -f $unsigned, (ConvertTo-Base64Url $signature)
 }
 
+# Invoke-RestMethod already converts ISO 8601 strings to DateTime; parsing that value again as text fails in non-US cultures.
+function ConvertTo-UtcDateTime {
+    param([Parameter(Mandatory)]$Value)
+
+    if ($Value -is [datetime]) {
+        return $Value.ToUniversalTime()
+    }
+
+    [datetime]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AdjustToUniversal -bor [Globalization.DateTimeStyles]::AssumeUniversal)
+}
+
 function Get-AgentToken {
     [CmdletBinding()]
     param(
@@ -112,7 +123,7 @@ function Get-AgentToken {
 
     [pscustomobject]@{
         Token     = $response.token
-        ExpiresAt = [datetime]::Parse($response.expires_at).ToUniversalTime()
+        ExpiresAt = ConvertTo-UtcDateTime $response.expires_at
     }
 }
 

@@ -52,6 +52,29 @@ Describe 'Get-AppJwt' {
     }
 }
 
+Describe 'ConvertTo-UtcDateTime' {
+    It 'accepts the ISO 8601 string that GitHub returns' {
+        $result = ConvertTo-UtcDateTime '2026-10-31T21:36:25Z'
+        $result | Should -Be ([datetime]::new(2026, 10, 31, 21, 36, 25, [DateTimeKind]::Utc))
+        $result.Kind | Should -Be ([DateTimeKind]::Utc)
+    }
+
+    It 'accepts a DateTime that Invoke-RestMethod already converted' {
+        $local = [datetime]::new(2026, 10, 31, 21, 36, 25, [DateTimeKind]::Utc).ToLocalTime()
+        ConvertTo-UtcDateTime $local | Should -Be ([datetime]::new(2026, 10, 31, 21, 36, 25, [DateTimeKind]::Utc))
+    }
+
+    It 'does not depend on the current culture' {
+        $previous = [Threading.Thread]::CurrentThread.CurrentCulture
+        try {
+            [Threading.Thread]::CurrentThread.CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo('nl-NL')
+            ConvertTo-UtcDateTime '2026-10-31T21:36:25Z' | Should -Be ([datetime]::new(2026, 10, 31, 21, 36, 25, [DateTimeKind]::Utc))
+        } finally {
+            [Threading.Thread]::CurrentThread.CurrentCulture = $previous
+        }
+    }
+}
+
 Describe 'Get-AgentToken' {
     It 'stops without a client id' {
         { Get-AgentToken -ClientId '' -Owner 'o' -Repository 'r' -VaultName 'v' -SecretName 's' } | Should -Throw '*Client ID*'

@@ -72,9 +72,8 @@ human approval is required.
 1. In the App settings > **Credentials** > **Key pairs** tab, generate a key pair. GitHub downloads a `.pem` file once. The key
    cannot be created on the creation form, only after the App exists.
    Ignore the **Client secrets** tab: client secrets are for user sign-in (OAuth), which the agent does not use.
-2. Store it **outside every repository**, for example in a folder only your user can read, or in a secret store such as the
-   Windows Credential Manager through the PowerShell SecretManagement module. Do not put it in a project folder,
-   and do not paste it into a chat or an issue.
+2. Store it **outside every repository**, in a PowerShell secret vault, see [secret-management.md](./secret-management.md).
+   Do not put it in a project folder, and do not paste it into a chat or an issue.
 3. Rotate the key when a person with access leaves, or when you suspect it leaked. Delete the old key under **Credentials**.
 
 `.gitignore` already blocks `*.pem` and `*.key`, as a second line of defence.

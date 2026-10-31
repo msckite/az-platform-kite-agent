@@ -27,7 +27,9 @@ only has the permissions you grant.
 3. Homepage URL: the repository URL.
 4. Disable **Webhook** (Active). The agent pulls, GitHub does not push events to it.
 5. Under **Where can this GitHub App be installed?** choose **Only on this account**.
-6. Upload an avatar that is clearly different from your own, so you can see who wrote what.
+6. Select **Create GitHub App**. The creation form has no logo field.
+7. On the App's settings page, under **General** > **Display information**, upload a logo that is clearly different from your
+   own avatar, so you can see who wrote what. The logo appears as the bot's avatar.
 
 ## Permissions
 
@@ -39,6 +41,9 @@ Grant the least privilege that the process needs, as **Repository permissions**:
 | Contents | Read and write | Push commits to `agent/**` branches. |
 | Pull requests | Read and write | Open and update pull requests. |
 | Issues | Read and write | Create issues and set labels. |
+
+Leave **Organization permissions**, **Account permissions** and **Enterprise permissions** on their default, **No access**.
+Only the four repository permissions above are needed.
 
 Do **not** grant Administration, Workflows, Actions or Environments. Without Administration the App cannot change rulesets, and
 without a bypass entry it cannot push to protected branches. It also cannot approve or merge its own pull request, because a

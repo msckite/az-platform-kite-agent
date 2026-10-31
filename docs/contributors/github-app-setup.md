@@ -16,6 +16,7 @@ only has the permissions you grant.
 - [Permissions](#permissions)
 - [Install the App](#install-the-app)
 - [Keep the private key safe](#keep-the-private-key-safe)
+- [Restrict who manages the App](#restrict-who-manages-the-app)
 - [Let Claude Code use the App](#let-claude-code-use-the-app)
 - [Remove personal credentials from the agent](#remove-personal-credentials-from-the-agent)
 - [Smoke test](#smoke-test)
@@ -28,12 +29,24 @@ only has the permissions you grant.
 4. Disable **Webhook** (Active). The agent pulls, GitHub does not push events to it.
 5. Under **Where can this GitHub App be installed?** choose **Only on this account**.
 6. Select **Create GitHub App**. The creation form has no logo field.
-7. Once the App exists, its settings page shows **Display information** with an **Upload a logo...** button. Upload a logo that
-   is clearly different from your own avatar, so you can see who wrote what. The logo appears as the bot's avatar.
+7. Once the App exists, its settings page has this menu. The next steps refer to these pages:
+
+   | Page | Used for |
+   | ---- | -------- |
+   | **General** | Display information and the logo (step 8) |
+   | **Permissions & events** | [Permissions](#permissions) |
+   | **Credentials** | [Private key](#keep-the-private-key-safe) |
+   | **Install App** | [Installation](#install-the-app) |
+   | **App managers** | [Who may manage the App](#restrict-who-manages-the-app) |
+
+   The pages **Optional features**, **Advanced** and **Public page** need no changes.
+
+8. On **General**, **Display information** has an **Upload a logo...** button. Upload a logo that is clearly different from
+   your own avatar, so you can see who wrote what. The logo appears as the bot's avatar.
 
 ## Permissions
 
-Grant the least privilege that the process needs, as **Repository permissions**:
+Open **Permissions & events** and grant the least privilege that the process needs, as **Repository permissions**:
 
 | Permission | Access | Why |
 | ---------- | ------ | --- |
@@ -55,20 +68,25 @@ human approval is required.
 
 ## Install the App
 
-1. Open the App settings > **Install App** > `msckite`.
+1. Open the App settings > **Install App**, and select **Install** next to `msckite`.
 2. Choose **Only select repositories** and select `az-platform-kite-agent`. Add other repositories one by one.
 
 Never choose **All repositories**.
 
 ## Keep the private key safe
 
-1. In the App settings > **Private keys** > **Generate a private key**. GitHub downloads a `.pem` file once.
+1. In the App settings > **Credentials** > **Private keys** > **Generate a private key**. GitHub downloads a `.pem` file once.
 2. Store it **outside every repository**, for example in a folder only your user can read, or in a secret store such as the
    Windows Credential Manager through the PowerShell SecretManagement module. Do not put it in a project folder,
    and do not paste it into a chat or an issue.
-3. Rotate the key when a person with access leaves, or when you suspect it leaked. Delete the old key in the App settings.
+3. Rotate the key when a person with access leaves, or when you suspect it leaked. Delete the old key under **Credentials**.
 
 `.gitignore` already blocks `*.pem` and `*.key`, as a second line of defence.
+
+## Restrict who manages the App
+
+Under **App managers**, keep the list as short as possible. A manager can change the App's permissions and generate keys, so
+only trusted humans belong there. The agent is never an App manager.
 
 ## Let Claude Code use the App
 

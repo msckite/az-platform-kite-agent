@@ -54,8 +54,8 @@ short-lived installation token (one repository, one hour) and sets the bot as th
 login. See [github-app-setup.md](./github-app-setup.md#let-claude-code-use-the-app).
 
 The Claude desktop app can run as the bot too, when it is started through the script with `-ClaudePath` (quit it completely first),
-see the note in the setup guide. Check who approved a pull request before you merge it: the bot's approval currently counts toward the
-required review (open gap, issue #18).
+see the note in the setup guide. An approval by the bot does not unblock a pull request: the ruleset also requires the commit status
+`human-approval`, which needs an approval of a human with write access, see [rulesets.md](./rulesets.md).
 
 Once the agent runs as the bot, enable the approval guard by setting the repository variable `APPROVAL_GUARD_ENABLED` to `true`:
 

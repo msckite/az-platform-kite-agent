@@ -17,7 +17,7 @@ Rulesets are how GitHub enforces the [human-in-the-loop process](./process.md). 
 
 | Ruleset | Applies to | Rules | Bypass |
 | ------- | ---------- | ----- | ------ |
-| `protect-non-agent-branches` | All branches except `agent/**` | Pull request required, 1 approval, stale reviews dismissed on push, review threads resolved, **squash merge only** | Repository admins, through a pull request only |
+| `protect-non-agent-branches` | All branches except `agent/**` | Pull request required, 1 approval **from a code owner**, stale reviews dismissed on push, review threads resolved, **squash merge only** | Repository admins, through a pull request only |
 | `protect-default-branch` | The default branch (`main`) | Block deletion, block force-push | None |
 
 The definitions are in [templates/github/rulesets](../../templates/github/rulesets):
@@ -29,8 +29,11 @@ The definitions are in [templates/github/rulesets](../../templates/github/rulese
 
 - Every branch except `agent/**` requires a pull request, so the agent cannot push to `main` or any other protected branch.
 - The agent can push to `agent/**`, which is where it works.
-- The agent has no permission to merge or approve, and a human must approve, so **nobody can merge their own work unreviewed**
-  (except an admin who deliberately uses the bypass).
+- The App has Pull requests write, which also allows reviews, so permissions cannot stop the agent from approving. The ruleset
+  requires a **code owner** review and [.github/CODEOWNERS](../../.github/CODEOWNERS) lists humans only, so an approval by the
+  App does not count. Together with the agent rule not to approve, **nobody can merge their own work unreviewed** (except an
+  admin who deliberately uses the bypass).
+- Never add a bot or an App to `CODEOWNERS` or to a bypass list.
 - Pull requests opened with the default `GITHUB_TOKEN` do not trigger other workflows. Use the GitHub App identity for the agent
   instead, see [github-app-setup.md](./github-app-setup.md).
 

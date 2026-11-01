@@ -36,7 +36,7 @@ references, confirm the remote branch is gone and check that the issue labels ma
 ## Rules that must not be broken
 
 - Do not push to `main`. Work on a branch and open a pull request.
-- Do not merge pull requests, delete branches you did not create, or create releases or tags.
+- Do not merge or approve pull requests, delete branches you did not create, or create releases or tags.
 - Do not set the `approved` label on your own initiative. Only on an explicit human request in the current chat.
 - Ask before any action that is hard to reverse or visible to others (creating issues, pushing, opening pull requests).
 - Never commit secrets, tokens or private keys.

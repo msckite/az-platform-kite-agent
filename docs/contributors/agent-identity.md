@@ -53,8 +53,9 @@ Start the agent with [Start-Agent.ps1](../../scripts/Start-Agent.ps1), not with 
 short-lived installation token (one repository, one hour) and sets the bot as the git author, so the agent never uses a human
 login. See [github-app-setup.md](./github-app-setup.md#let-claude-code-use-the-app).
 
-The Claude desktop app does not start through that script. Whether it can act as the bot is untested; until it is, use the CLI
-session for agent work.
+The Claude desktop app can run as the bot too, when it is started through the script with `-ClaudePath` (quit it completely first),
+see the note in the setup guide. Check who approved a pull request before you merge it: the bot's approval currently counts toward the
+required review (open gap, issue #18).
 
 Once the agent runs as the bot, enable the approval guard by setting the repository variable `APPROVAL_GUARD_ENABLED` to `true`:
 

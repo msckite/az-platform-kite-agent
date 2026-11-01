@@ -17,7 +17,7 @@ Rulesets are how GitHub enforces the [human-in-the-loop process](./process.md). 
 
 | Ruleset | Applies to | Rules | Bypass |
 | ------- | ---------- | ----- | ------ |
-| `protect-non-agent-branches` | All branches except `agent/**` | Pull request required, 1 approval, the check `human-approval`, stale reviews dismissed on push, review threads resolved, **squash merge only** | Repository admins, through a pull request only |
+| `protect-non-agent-branches` | All branches except `agent/**` | Pull request required, 1 approval, the commit status `human-approval`, stale reviews dismissed on push, review threads resolved, **squash merge only** | Repository admins, through a pull request only |
 | `protect-default-branch` | The default branch (`main`) | Block deletion, block force-push | None |
 
 The definitions are in [templates/github/rulesets](../../templates/github/rulesets):
@@ -31,12 +31,15 @@ The definitions are in [templates/github/rulesets](../../templates/github/rulese
 - The agent can push to `agent/**`, which is where it works.
 - The App has Pull requests write, which also allows reviews, and GitHub counts an approval by the App toward the required
   approvals. Permissions cannot stop the agent from approving, and a code owner review does not help either (tested in
-  [issue #18](https://github.com/msckite/az-platform-kite-agent/issues/18)). The ruleset therefore also requires the check
+  [issue #18](https://github.com/msckite/az-platform-kite-agent/issues/18)). The ruleset therefore also requires the commit status
   `human-approval` ([human-approval.yaml](../../.github/workflows/human-approval.yaml)), which passes only with an approval from
   a human with write access. Together with the agent rule not to approve, **nobody can merge their own work unreviewed**
   (except an admin who deliberately uses the bypass).
-- The check runs from the workflow in the pull request for review events, so a pull request could change it. A human merges
-  every pull request and sees that diff.
+- It is a commit status, not the result of the workflow job: a commit status keeps one state per commit, so a failure from before
+  the approval cannot keep blocking the pull request (a failed check run with the same name did, see issue #18).
+- Limits: anything with a token that may write commit statuses could fake it (the App has no such permission), and for review
+  events the workflow runs from the merge commit of the pull request, so a pull request could change it. A human merges every
+  pull request and sees that diff.
 - Never add a bot or an App to a bypass list.
 - Pull requests opened with the default `GITHUB_TOKEN` do not trigger other workflows. Use the GitHub App identity for the agent
   instead, see [github-app-setup.md](./github-app-setup.md).

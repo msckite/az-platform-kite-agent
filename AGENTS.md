@@ -6,17 +6,16 @@ This repository builds the **MSCKite Kite Agent**, a Claude Code plugin that hel
 source of rules. `CLAUDE.md` and other tool adapters point here.
 
 > [!NOTE]
-> This repository is in its foundation phase. The sections marked _(planned)_ describe the target
-> process and are not enforced yet.
+> This repository is in its foundation phase. The working process is in use, but the Kite Agent plugin is not built yet.
 
 ## Principles
 
 - **AI supports, humans decide.** Agents research, propose and execute. Humans approve and merge.
 - **The GitHub issue is the single source of truth** for status and decisions. Record every decision there.
-- **Least privilege.** Agents act under their own identity (a GitHub App, _planned_), never with a human's privileges.
+- **Least privilege.** Agents act under their own identity (a GitHub App), never with a human's privileges.
 - **Everything is in English**: issues, documentation, commit messages and agent output.
 
-## Working process _(planned)_
+## Working process
 
 1. A human asks a question or states a need.
 2. The agent researches and proposes a plan in chat. The human adjusts it until it is approved.

@@ -1,0 +1,3 @@
+# Only humans are code owners. The ruleset requires a code owner review, so an approval by the GitHub App does not count.
+# Never add a bot or an App here, see docs/contributors/rulesets.md.
+* @msw1nkels

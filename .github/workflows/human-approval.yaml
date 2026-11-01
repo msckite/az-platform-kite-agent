@@ -1,0 +1,72 @@
+name: Human Approval
+
+# Gate 2 control: the pull request needs an approval from a human. The App that the agent uses can
+# review pull requests (its Pull requests write permission allows it) and GitHub counts that review
+# toward the required approvals, so the ruleset also requires this check.
+#
+# The job passes only when a user of type User, who is not the author and has write access or more,
+# approved the latest commit. It checks out nothing, so no code of the pull request is run.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  pull_request_review:
+    types:
+      - submitted
+      - dismissed
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  human-approval:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Require an approval from a human with write access
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner, repo, pull_number: pr.number, per_page: 100,
+            });
+
+            // The last review of a reviewer that approves, requests changes or is dismissed decides.
+            const latest = new Map();
+            for (const review of reviews) {
+              if (!review.user || review.state === 'COMMENTED' || review.state === 'PENDING') continue;
+              latest.set(review.user.login, review);
+            }
+
+            const humans = [];
+            const ignored = [];
+            for (const [login, review] of latest) {
+              if (review.state !== 'APPROVED') continue;
+              if (review.user.type !== 'User' || login === pr.user.login || review.commit_id !== pr.head.sha) {
+                ignored.push(login);
+                continue;
+              }
+              const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: login });
+              if (['admin', 'maintain', 'write'].includes(data.role_name)) {
+                humans.push(login);
+              } else {
+                ignored.push(login);
+              }
+            }
+
+            if (ignored.length > 0) {
+              core.info(`Approvals that do not count (bot, author, old commit or no write access): ${ignored.join(', ')}`);
+            }
+            if (humans.length === 0) {
+              core.setFailed('No approval from a human with write access on the latest commit.');
+            } else {
+              core.info(`Approved by: ${humans.join(', ')}`);
+            }

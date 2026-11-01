@@ -50,6 +50,8 @@ references, confirm the remote branch is gone and check that the issue labels ma
 - Agent-created issues use the sections of the agent task form, in that order
   ([.github/ISSUE_TEMPLATE/01-agent-task.yml](./.github/ISSUE_TEMPLATE/01-agent-task.yml)): goal, context, proposed plan,
   risk and impact, smoke test, decision log.
+- Smoke tests are written in PowerShell, because that is the default shell of the humans reviewing them. Do not use `grep`,
+  `sed` or other Unix tools in them.
 - Windows with Git Bash has no Python. Use PowerShell or editor tooling for scripted edits.
 
 ## Repository map

@@ -154,4 +154,4 @@ the rename is intended.
 ## Smoke tests
 
 Every change comes with a smoke test a human can run to prove the change behaves as expected. The agent states the command and
-the expected result in the issue and in the pull request. Prefer a small PowerShell or Bash script over a description.
+the expected result in the issue and in the pull request. Write it in PowerShell and avoid Unix tools such as `grep`: humans run it in a PowerShell session. Prefer a small script over a description.

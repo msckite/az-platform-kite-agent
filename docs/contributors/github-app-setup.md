@@ -149,11 +149,12 @@ the App (for example while the vault is not set up) fails instead of using your 
 > merging. The JWT and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Verified on 2026-11-01 (issue #15): the Claude desktop app
 > acting as the bot, and GitHub rejecting the bot's approval of its own pull request (`Can not approve your own pull request`).
 
-> [!WARNING]
-> Open gap, tracked in [issue #18](https://github.com/msckite/az-platform-kite-agent/issues/18): an approval by the App counts toward the
-> required review of the ruleset. The bot approved a pull request of a human and its merge state changed from `BLOCKED` to `CLEAN`.
-> The App needs Pull requests write to open pull requests, and that permission also allows reviews. Until #18 is done, the only
-> control is the agent rule that forbids approving pull requests, and a human must check who approved before merging.
+> [!IMPORTANT]
+> An approval by the App counts toward the required review of the ruleset: the App needs Pull requests write to open pull
+> requests, and that permission also allows reviews. Verified on 2026-11-01 ([issue #18](https://github.com/msckite/az-platform-kite-agent/issues/18)):
+> a code owner review does not help, but the commit status `human-approval` does. With the bot as the only approver the status stays
+> `failure` and the pull request stays `BLOCKED`; after an approval of a human with write access it is `success` and the pull
+> request is `CLEAN`. See [rulesets.md](./rulesets.md).
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 

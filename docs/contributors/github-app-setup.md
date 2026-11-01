@@ -132,9 +132,11 @@ location `~/.local/bin/claude.exe`, then `claude` on your PATH. The script stops
 cannot find an executable.
 
 > [!NOTE]
-> The script starts a CLI session in your terminal and gives that process the token. A session in the Claude desktop app runs in
-> the app's own process, so the script cannot change its identity. Whether the desktop app can act as the bot, for example by
-> starting the app from a process that holds the token, is untested.
+> The script gives the process it starts the token. A session in the Claude desktop app runs in the app's own process, so start
+> the app through the script: quit the app completely (including the tray icon), then run
+> `./scripts/Start-Agent.ps1 -ClaudePath '<path of the desktop app exe>'`. Verified on 2026-11-01 ([issue #15](https://github.com/msckite/az-platform-kite-agent/issues/15)):
+> a desktop app session started this way runs as the bot, with the same checks as the CLI session. Parts of the app that use its own
+> GitHub login are not covered. Restart the app through the script after the token expires.
 
 The token expires after one hour. Restart the script when it runs out; the script prints the expiry time. A script run without
 the App (for example while the vault is not set up) fails instead of using your login.
@@ -144,8 +146,14 @@ the App (for example while the vault is not set up) fails instead of using your 
 > committer, the push to an `agent/**` branch through the credential helper, and the ruleset rejecting a push to `main`.
 > Verified on 2026-11-01 ([issue #11](https://github.com/msckite/az-platform-kite-agent/issues/11)): the bot opened a pull request
 > and `gh pr merge --squash` was rejected with "the base branch policy prohibits the merge", so the ruleset stops the App from
-> merging. The JWT and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Not tested: the bot approving
-> its own pull request (the auto-mode classifier blocked the command) and the Claude desktop app acting as the bot.
+> merging. The JWT and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Verified on 2026-11-01 (issue #15): the Claude desktop app
+> acting as the bot, and GitHub rejecting the bot's approval of its own pull request (`Can not approve your own pull request`).
+
+> [!WARNING]
+> Open gap, tracked in [issue #18](https://github.com/msckite/az-platform-kite-agent/issues/18): an approval by the App counts toward the
+> required review of the ruleset. The bot approved a pull request of a human and its merge state changed from `BLOCKED` to `CLEAN`.
+> The App needs Pull requests write to open pull requests, and that permission also allows reviews. Until #18 is done, the only
+> control is the agent rule that forbids approving pull requests, and a human must check who approved before merging.
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 

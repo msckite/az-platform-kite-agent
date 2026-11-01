@@ -1,0 +1,62 @@
+---
+name: 'Agent task'
+description: 'An approved-plan task for a human and an agent: the issue is the single source of truth'
+title: '<type>: <Capitalized summary>'
+labels: ['plan proposed :clipboard:']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in the approved plan. The issue is the single source of truth for status and decisions.
+        A human sets the `approved` label (key `approved`) before any work starts; see
+        [the process](https://github.com/msckite/az-platform-kite-agent/blob/main/docs/contributors/process.md).
+        The label above is the title of the `plan-proposed` key; rename it here when your label set differs.
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true when this is done, and why.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Background, constraints and decisions made so far.
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Proposed plan
+      description: The numbered steps, including the branch name `agent/<issue-number>-<slug>`.
+      value: |
+        Branch `agent/<n>-<slug>`.
+
+        1.
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk and impact
+      description: What can go wrong, what is changed, and what is hard to reverse.
+    validations:
+      required: true
+  - type: textarea
+    id: smoke-test
+    attributes:
+      label: Smoke test
+      description: A command or script a human can run to prove the change, with the expected result.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: decision-log
+    attributes:
+      label: Decision log
+      description: Every decision with who made it, human or agent. Keep it current.
+      value: |
+        - Plan to be approved.
+    validations:
+      required: true

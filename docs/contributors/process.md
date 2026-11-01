@@ -111,7 +111,11 @@ When a human tells the agent that a pull request is merged, the agent:
 
 ## The issue is the source of truth
 
-The issue is where the team and the agents read the status and the decisions. Keep it current:
+The issue is where the team and the agents read the status and the decisions. It is created from the
+[agent task form](../../.github/ISSUE_TEMPLATE/01-agent-task.yml), which asks for the goal, context, proposed plan, risk and
+impact, smoke test and decision log. The form sets the title of the `plan-proposed` label; issue forms cannot resolve keys, so
+update the form when you rename that label. Pull requests use the [template](../../.github/pull_request_template.md). Keep the
+issue current:
 
 - The **Proposed plan** is the approved plan. If the plan changes during the work, the agent updates it and adds a line to the
   decision log, and a human re-approves when the change is more than cosmetic.

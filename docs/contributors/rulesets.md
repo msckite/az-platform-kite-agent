@@ -17,7 +17,7 @@ Rulesets are how GitHub enforces the [human-in-the-loop process](./process.md). 
 
 | Ruleset | Applies to | Rules | Bypass |
 | ------- | ---------- | ----- | ------ |
-| `protect-non-agent-branches` | All branches except `agent/**` | Pull request required, 1 approval **from a code owner**, stale reviews dismissed on push, review threads resolved, **squash merge only** | Repository admins, through a pull request only |
+| `protect-non-agent-branches` | All branches except `agent/**` | Pull request required, 1 approval, the check `human-approval`, stale reviews dismissed on push, review threads resolved, **squash merge only** | Repository admins, through a pull request only |
 | `protect-default-branch` | The default branch (`main`) | Block deletion, block force-push | None |
 
 The definitions are in [templates/github/rulesets](../../templates/github/rulesets):
@@ -29,11 +29,15 @@ The definitions are in [templates/github/rulesets](../../templates/github/rulese
 
 - Every branch except `agent/**` requires a pull request, so the agent cannot push to `main` or any other protected branch.
 - The agent can push to `agent/**`, which is where it works.
-- The App has Pull requests write, which also allows reviews, so permissions cannot stop the agent from approving. The ruleset
-  requires a **code owner** review and [.github/CODEOWNERS](../../.github/CODEOWNERS) lists humans only, so an approval by the
-  App does not count. Together with the agent rule not to approve, **nobody can merge their own work unreviewed** (except an
-  admin who deliberately uses the bypass).
-- Never add a bot or an App to `CODEOWNERS` or to a bypass list.
+- The App has Pull requests write, which also allows reviews, and GitHub counts an approval by the App toward the required
+  approvals. Permissions cannot stop the agent from approving, and a code owner review does not help either (tested in
+  [issue #18](https://github.com/msckite/az-platform-kite-agent/issues/18)). The ruleset therefore also requires the check
+  `human-approval` ([human-approval.yaml](../../.github/workflows/human-approval.yaml)), which passes only with an approval from
+  a human with write access. Together with the agent rule not to approve, **nobody can merge their own work unreviewed**
+  (except an admin who deliberately uses the bypass).
+- The check runs from the workflow in the pull request for review events, so a pull request could change it. A human merges
+  every pull request and sees that diff.
+- Never add a bot or an App to a bypass list.
 - Pull requests opened with the default `GITHUB_TOKEN` do not trigger other workflows. Use the GitHub App identity for the agent
   instead, see [github-app-setup.md](./github-app-setup.md).
 

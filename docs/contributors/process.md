@@ -88,6 +88,7 @@ is not at `templates/github/other/github-labels.jsonc`.
 | | Pull request closed without merge | Set `in-progress`, remove `in-pr` and comment. |
 | | Issue reopened | Remove `completed`, set `todo`. |
 | [approval-guard.yaml](../../.github/workflows/approval-guard.yaml) | `approved` label set | Removes it and comments when a bot set it, or when the issue has no `plan-proposed`. |
+| [human-approval.yaml](../../.github/workflows/human-approval.yaml) | Pull request opened or pushed, review submitted or dismissed | Check `human-approval`: passes only with an approval of a human with write access on the latest commit. The ruleset requires it, see [rulesets.md](./rulesets.md). |
 
 The approval guard is a safety net that reacts after the label is set. It runs only when the repository variable
 `APPROVAL_GUARD_ENABLED` is `true`. Enable it once the agent works as the GitHub App, because before that the agent uses a human

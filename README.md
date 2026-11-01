@@ -32,7 +32,7 @@ See [AGENTS.md](./AGENTS.md) for the rules agents follow here.
 | Label status workflows and approval guard | In review, see [process](./docs/contributors/process.md#automation) |
 | Agent token script (run as the GitHub App) | In review, see [GitHub App setup](./docs/contributors/github-app-setup.md#let-claude-code-use-the-app) |
 | Issue form and pull request template | In review, see [process](./docs/contributors/process.md#the-issue-is-the-source-of-truth) |
-| Label sync script | Planned |
+| Label sync script | In review, see [process](./docs/contributors/process.md#sync-the-labels) |
 | Kite Agent plugin | Planned |
 
 ## License

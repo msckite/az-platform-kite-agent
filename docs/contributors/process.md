@@ -15,6 +15,7 @@ This is the default way of working in this repository. It also serves as the sta
 - [After a merge](#after-a-merge)
 - [The issue is the source of truth](#the-issue-is-the-source-of-truth)
 - [Branches, commits and pull requests](#branches-commits-and-pull-requests)
+- [Sync the labels](#sync-the-labels)
 - [Smoke tests](#smoke-tests)
 
 ## Lifecycle
@@ -117,6 +118,8 @@ impact, smoke test and decision log. The form sets the title of the `plan-propos
 update the form when you rename that label. Pull requests use the [template](../../.github/pull_request_template.md). Keep the
 issue current:
 
+- Agent-created issues use the sections of the agent task form, in that order. The form only guides people in the web UI;
+  issues created with the API or `gh` skip it, so the agent follows the same sections itself.
 - The **Proposed plan** is the approved plan. If the plan changes during the work, the agent updates it and adds a line to the
   decision log, and a human re-approves when the change is more than cosmetic.
 - The **Decision log** lists every decision with the date and who made it, human or agent.
@@ -129,6 +132,24 @@ issue current:
   The pull request title becomes the commit title on `main`.
 - The pull request description closes the issue (`Closes #1`) and contains the smoke test.
 - Agent commits carry a `Co-Authored-By` line, see [agent-identity.md](./agent-identity.md).
+
+## Sync the labels
+
+[scripts/Sync-Labels.ps1](../../scripts/Sync-Labels.ps1) wraps `Set-GitHubLabels` of the `MSCKite.Azure.Platform` module. It is a
+dry run unless you pass `-Apply`:
+
+```powershell
+./scripts/Sync-Labels.ps1 -Owner msckite -Repository az-platform-kite-agent           # dry run: what would change
+./scripts/Sync-Labels.ps1 -Owner msckite -Repository az-platform-kite-agent -Apply    # sync, then a second run that must change nothing
+```
+
+It validates the label file first (unique kebab-case keys, and the keys that the process needs). It stops on a likely rename,
+because `Set-GitHubLabels` matches labels by name and would delete the old label and its issue associations. Pass `-Force` when
+the rename is intended.
+
+> [!NOTE]
+> Set the `approved` label while the issue still has `plan-proposed`. The approval guard checks the labels at that moment, so
+> removing `plan-proposed` first, or in the same edit, makes it revert the approval.
 
 ## Smoke tests
 

@@ -1,1 +1,2 @@
 scratch file for test C of #18
+second change

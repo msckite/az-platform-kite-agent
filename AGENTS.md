@@ -48,6 +48,9 @@ references, confirm the remote branch is gone and check that the issue labels ma
   in PowerShell, two spaces in JSON, JSONC and YAML.
 - `camelCase` keys in JSON files, `PascalCase` for public PowerShell identifiers, approved verbs for commands.
 - Commit and pull request titles are Conventional Commits: `<type>: <Capitalized summary>`. Pull requests are squash-merged.
+- Agent-created issues use the sections of the agent task form, in that order
+  ([.github/ISSUE_TEMPLATE/01-agent-task.yml](./.github/ISSUE_TEMPLATE/01-agent-task.yml)): goal, context, proposed plan,
+  risk and impact, smoke test, decision log.
 - Windows with Git Bash has no Python. Use PowerShell or editor tooling for scripted edits.
 
 ## Repository map

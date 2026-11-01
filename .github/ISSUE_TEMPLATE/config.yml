@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: How we work
+    url: https://github.com/msckite/az-platform-kite-agent/blob/main/docs/contributors/process.md
+    about: Read the human-in-the-loop process before you open an issue.

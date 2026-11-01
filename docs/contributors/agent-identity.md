@@ -25,6 +25,9 @@ carries a human's privileges.
 | Role in repositories | Installed on selected repositories only, with the permissions in the setup guide |
 | Branches | Can only write to `agent/**`, enforced by [rulesets](./rulesets.md) |
 
+A GitHub App bot has no profile page, so hovering over `msckite-agent[bot]` shows "Failed to fetch hovercard content: 404". That
+is normal; the bot's page is [github.com/apps/msckite-agent](https://github.com/apps/msckite-agent).
+
 ## What the agent may do
 
 - Read the repository, issues and pull requests.

@@ -67,7 +67,7 @@ the bypass list. Never add the App to a bypass list.
 
 > [!IMPORTANT]
 > Setting the `approved` label is a human gate, but GitHub cannot restrict a single label to humans through permissions alone.
-> The agent rule in [AGENTS.md](../../AGENTS.md) forbids it and a workflow reverts it (planned). Treat both as controls.
+> The agent rule in [AGENTS.md](../../AGENTS.md) forbids it and a workflow reverts it. Treat both as controls.
 
 ## Keep the private key safe
 
@@ -141,9 +141,11 @@ the App (for example while the vault is not set up) fails instead of using your 
 
 > [!NOTE]
 > Verified with the real key on 2026-10-31: the token exchange, a token limited to this repository, the bot as git author and
-> committer, the push to an `agent/**` branch through the credential helper, and the ruleset rejecting a push to `main`. The JWT
-> and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Still unverified: that the ruleset stops the App from merging a
-> pull request; test it on a throwaway pull request, never on one you want to keep.
+> committer, the push to an `agent/**` branch through the credential helper, and the ruleset rejecting a push to `main`.
+> Verified on 2026-11-01 ([issue #11](https://github.com/msckite/az-platform-kite-agent/issues/11)): the bot opened a pull request
+> and `gh pr merge --squash` was rejected with "the base branch policy prohibits the merge", so the ruleset stops the App from
+> merging. The JWT and `-WhatIf` run are also covered offline by `Invoke-Pester ./scripts/tests`. Not tested: the bot approving
+> its own pull request (the auto-mode classifier blocked the command) and the Claude desktop app acting as the bot.
 
 In workflows, use the `actions/create-github-app-token` action with the App id and key stored as a repository variable and secret.
 
@@ -186,9 +188,12 @@ git push origin "$(git commit-tree 'HEAD^{tree}' -p HEAD -m 'test: App identity'
 gh api repos/msckite/az-platform-kite-agent/commits/agent/app-test --jq '.author.login, .committer.login'
                                               # expect: msckite-agent[bot] twice
 git push origin HEAD:main                     # expect: rejected, GH013 repository rule violations
-gh pr merge <throwaway-pr-number> --squash    # expect: rejected, approval required; use a throwaway pull request
+gh pr merge <throwaway-pr-number> --squash    # expect: rejected, base branch policy prohibits the merge; use a throwaway pull request
 git push origin --delete agent/app-test       # clean up
 ```
+
+`gh pr view --json author` shows a bot as `app/msckite-agent`. That is how GraphQL names an app; REST
+(`gh api repos/msckite/az-platform-kite-agent/pulls/<n> --jq .user.login`) shows `msckite-agent[bot]`.
 
 If `.author.login` is empty, GitHub could not link the e-mail address to the bot: check that `Start-Agent.ps1` found the bot id
 (the address must start with `<id>+`).
